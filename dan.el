@@ -39,7 +39,7 @@
 (defvar backup-dir (concat "/tmp/emacs_backups/" (user-login-name) "/"))
 (setq backup-directory-alist (list (cons "." backup-dir)))
  
-;;(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
  
 (setq default-tab-width 2)
 (setq tab-width 2)
@@ -75,7 +75,11 @@
  
 ;; Commands
 (require 'unbound)
- 
+
+;; autotest
+(add-to-list 'load-path (concat dotfiles-dir "/vendor/autotest"))
+(require 'autotest)
+
 ;; Minor Modes
 (add-to-list 'load-path (concat dotfiles-dir "/vendor/textmate.el"))
 (require 'textmate)
@@ -286,7 +290,8 @@
 
 ;; Activate theme
 ;; (color-theme-emacs-21)
-(color-theme-charcoal-black)
+;;(color-theme-charcoal-black)
+(color-theme-zenburn)
 ;;(color-theme-subtle-hacker)
 ;;(color-theme-arjen)
 ;;(color-theme-gray30)

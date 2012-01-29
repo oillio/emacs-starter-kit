@@ -14,6 +14,17 @@
 ;; Use Alt for the Meta key
 (setq mac-option-modifier 'meta)
 
+;; Fix the meta key.  It should be option
+(setq mac-option-key-is-meta nil)
+(setq mac-command-key-is-meta t)
+(setq mac-command-modifier 'meta)
+(setq mac-option-modifier nil)
+
+;; fix path options in OSX
+(when (equal system-type 'darwin)
+  (setenv "PATH" (concat "/opt/local/bin:/usr/local/bin:" (getenv "PATH")))
+  (push "/opt/local/bin" exec-path))
+
 (add-to-list 'load-path (concat dotfiles-dir "/vendor"))
 
 ;; Save backups in one place
@@ -43,12 +54,6 @@
 
 (setq default-tab-width 2)
 (setq tab-width 2)
-
-;; Open current file in TextMate.
-(defun textmate-open-buffer ()
-  (interactive)
-  (shell-command-to-string (concat "mate " buffer-file-name)))
-
 
 ;; Clojure
 ;;(eval-after-load 'clojure-mode '(clojure-slime-config))
@@ -168,6 +173,85 @@
 (ruby-block-mode t)
 (setq ruby-block-highlight-toggle 'overlay)
 
+;; ruby electric
+;(add-hook 'ruby-mode-hook 'ruby-electric-mode)
+
+(require 'ruby-braces)
+
+;; setup tags support.  Generate them each time a ruby file is opened.
+(require 'gtags)
+(defun dpj-ruby-gtags-create-or-update ()
+  "create or update the gnu global tag file"
+  (interactive)
+  (if (not (= 0 (call-process "global" nil nil nil " -p"))) ; tagfile doesn't exist?
+    (let ((olddir default-directory)
+          (topdir (read-directory-name
+                    "gtags: top of source tree:" default-directory)))
+      (cd topdir)
+      (shell-command "export GTAGSLABEL=rtags && gtags && echo 'created tagfile'")
+      (cd olddir)) ; restore
+    ;;  tagfile already exists; update it
+    (shell-command "global -u && echo 'updated tagfile'")))
+
+;; (add-hook 'gtags-mode-hook
+;;   (lambda()
+;;     (local-set-key (kbd "M-.") 'gtags-find-tag)   ; find a tag, also M-.
+;;    (local-set-key (kbd "M-,") 'gtags-find-rtag))) ; reverse tag
+
+(add-hook 'ruby-mode-hook
+  (lambda ()
+    (require 'gtags)
+    (gtags-mode t)
+    (setq gtags-symbol-regexp "[A-Za-z_:][A-Za-z0-9_#.:?]*")
+    (dpj-ruby-gtags-create-or-update)))
+
+(define-key gtags-mode-map "\M-," 'gtags-find-rtag)
+
+;; setup ruby debugging
+(add-to-list 'load-path (concat dotfiles-dir "/vendor/rdebug"))
+(require 'rdebug)
+(setq rdebug-short-key-mode t)
+
+;; Setup anything
+(add-to-list 'load-path (concat dotfiles-dir "/vendor/anything-config"))
+(require 'anything-startup)
+
+;; Setup RCodeTools
+;(add-to-list 'load-path (concat dotfiles-dir "/vendor/rcodetools"))
+;(require 'rcodetools)
+;(require 'anything-rcodetools)
+;(setq rct-get-all-methods-command "PAGER=cat fri -l")
+;(define-key anything-map "\C-z" 'anything-execute-persistent-action)
+;(setq rct-find-tag-if-available nil)
+
+;; Run a command in inf-ruby
+(defun dpj-ruby-console (&optional edit-cmd-args)
+  "Run a ruby script in a compilation buffer, with command
+history and links between errors and source code.  With optional
+prefix argument allows editing of the console command arguments."
+  (interactive)
+  (run-ruby (dpj-find-console))
+  (save-excursion
+    (set-buffer "*ruby*")
+    (set (make-local-variable 'inf-ruby-first-prompt-pattern) "^>> ")
+    (set (make-local-variable 'inf-ruby-prompt-pattern) "^>> ")))
+
+(defun dpj-find-console (&optional dir home)
+  (or dir (setq dir default-directory))
+  (if (file-exists-p (expand-file-name
+		      "console" (expand-file-name "script" dir)))
+      (expand-file-name "console" (file-name-as-directory
+					       (expand-file-name "script" dir)))
+    (let ((new-dir (expand-file-name (file-name-as-directory "..") dir)))
+      ;; regexp to match windows roots, tramp roots, or regular posix roots
+      (unless (string-match "\\(^[[:alpha:]]:/$\\|^/[^\/]+:\\|^/$\\)" dir)
+        (dpj-find-console new-dir)))))
+
+(define-key ruby-mode-map "\C-c s" 'dpj-ruby-console)
+
+
+(require 'browse-kill-ring+)
+
 ;; XCODE
 (require 'objc-c-mode)
 
@@ -247,34 +331,10 @@
   (set-frame-parameter nil 'fullscreen (if (frame-parameter nil 'fullscreen)
                                            nil
                                          'fullboth)))
-(global-set-key (kbd "M-n") 'toggle-fullscreen)
-
 
 ;; Keyboard
 
 ;; (add-hook `ruby-mode-hook `(lambda () (inf-ruby-keys)))
-
-;; Split Windows
-(global-set-key [f6] 'split-window-horizontally)
-(global-set-key [f7] 'split-window-vertically)
-(global-set-key [f8] 'delete-window)
-
-;; Keyboard Overrides
-(global-set-key [(meta up)] 'beginning-of-buffer)
-(global-set-key [(meta down)] 'end-of-buffer)
-
-(global-set-key [(meta shift right)] 'ido-switch-buffer)
-(global-set-key [(meta shift up)] 'recentf-ido-find-file)
-(global-set-key [(meta shift down)] 'ido-find-file)
-(global-set-key [(meta shift left)] 'magit-status)
-
-(global-set-key [(meta H)] 'delete-other-windows)
-
-(global-set-key [(meta D)] 'backward-kill-word) ;; (meta d) is opposite
-
-(global-set-key [(meta N)] 'cleanup-buffer)
-
-(global-set-key [(control \])] 'indent-rigidly)
 
 ;; Other
 
@@ -299,13 +359,7 @@
 (set-default-font
      "-apple-consolas-medium-r-normal--12-0-72-72-m-0-iso10646-1")
 
-;; Fix the meta key.  It should be option
-(setq mac-option-key-is-meta nil)
-(setq mac-command-key-is-meta t)
-(setq mac-command-modifier 'meta)
-(setq mac-option-modifier nil)
+;; Get stuff
+(require 'registers)
+(require 'bindings)
 
-;; fix path options in OSX
-(when (equal system-type 'darwin)
-  (setenv "PATH" (concat "/opt/local/bin:/usr/local/bin:" (getenv "PATH")))
-  (push "/opt/local/bin" exec-path))

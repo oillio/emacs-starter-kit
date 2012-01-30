@@ -363,3 +363,4 @@ prefix argument allows editing of the console command arguments."
 (require 'registers)
 (require 'bindings)
 
+(require 'magit)

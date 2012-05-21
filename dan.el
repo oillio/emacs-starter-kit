@@ -179,33 +179,33 @@
 (require 'ruby-braces)
 
 ;; setup tags support.  Generate them each time a ruby file is opened.
-(require 'gtags)
-(defun dpj-ruby-gtags-create-or-update ()
-  "create or update the gnu global tag file"
-  (interactive)
-  (if (not (= 0 (call-process "global" nil nil nil " -p"))) ; tagfile doesn't exist?
-    (let ((olddir default-directory)
-          (topdir (read-directory-name
-                    "gtags: top of source tree:" default-directory)))
-      (cd topdir)
-      (shell-command "export GTAGSLABEL=rtags && gtags && echo 'created tagfile'")
-      (cd olddir)) ; restore
-    ;;  tagfile already exists; update it
-    (shell-command "global -u && echo 'updated tagfile'")))
+;(require 'gtags)
+;(defun dpj-ruby-gtags-create-or-update ()
+;  "create or update the gnu global tag file"
+;  (interactive)
+  ;; (if (not (= 0 (call-process "global" nil nil nil " -p"))) ; tagfile doesn't exist?
+  ;;   (let ((olddir default-directory)
+  ;;         (topdir (read-directory-name
+  ;;                   "gtags: top of source tree:" default-directory)))
+  ;;     (cd topdir)
+  ;;     (shell-command "export GTAGSLABEL=rtags && gtags && echo 'created tagfile'")
+  ;;     (cd olddir)) ; restore
+  ;;   ;;  tagfile already exists; update it
+  ;;   (shell-command "global -u && echo 'updated tagfile'")))
 
 ;; (add-hook 'gtags-mode-hook
 ;;   (lambda()
 ;;     (local-set-key (kbd "M-.") 'gtags-find-tag)   ; find a tag, also M-.
 ;;    (local-set-key (kbd "M-,") 'gtags-find-rtag))) ; reverse tag
 
-(add-hook 'ruby-mode-hook
-  (lambda ()
-    (require 'gtags)
-    (gtags-mode t)
-    (setq gtags-symbol-regexp "[A-Za-z_:][A-Za-z0-9_#.:?]*")
-    (dpj-ruby-gtags-create-or-update)))
+;; (add-hook 'ruby-mode-hook
+;;   (lambda ()
+;;     (require 'gtags)
+;;     (gtags-mode t)
+;;     (setq gtags-symbol-regexp "[A-Za-z_:][A-Za-z0-9_#.:?]*")
+;;     (dpj-ruby-gtags-create-or-update)))
 
-(define-key gtags-mode-map "\M-," 'gtags-find-rtag)
+;; (define-key gtags-mode-map "\M-," 'gtags-find-rtag)
 
 ;; setup ruby debugging
 (add-to-list 'load-path (concat dotfiles-dir "/vendor/rdebug"))

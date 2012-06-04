@@ -364,3 +364,8 @@ prefix argument allows editing of the console command arguments."
 (require 'bindings)
 
 (require 'magit)
+
+;;xml-lite for DRYML
+(require 'xml-lite)
+(set-variable 'xml-lite-indent-offset 2)
+(add-to-list 'auto-mode-alist '("\\.dryml$" . xml-lite-mode))

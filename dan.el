@@ -210,6 +210,11 @@
 ;; setup ruby debugging
 (add-to-list 'load-path (concat dotfiles-dir "/vendor/rdebug"))
 (require 'rdebug)
+(autoload 'rdebug "rdebug" "Ruby debugging support." t)
+;(global-set-key [f9] 'gud-step)
+;(global-set-key [f10] 'gud-next)
+;(global-set-key [f11] 'gud-cont)
+;(global-set-key "\C-c\C-d" 'rdebug)
 (setq rdebug-short-key-mode t)
 
 ;; Setup anything
@@ -369,3 +374,17 @@ prefix argument allows editing of the console command arguments."
 (require 'xml-lite)
 (set-variable 'xml-lite-indent-offset 2)
 (add-to-list 'auto-mode-alist '("\\.dryml$" . xml-lite-mode))
+
+
+;;activate inf-ruby-bond
+(require 'inf-ruby-bond)
+
+(defun remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+(add-hook 'text-mode-hook 'remove-dos-eol)
+
+(add-to-list 'load-path (concat dotfiles-dir "/vendor/sunrise-commander"))
+(require 'sunrise-commander)

@@ -174,7 +174,7 @@
 (setq ruby-block-highlight-toggle 'overlay)
 
 ;; ruby electric
-;(add-hook 'ruby-mode-hook 'ruby-electric-mode)
+(add-hook 'ruby-mode-hook 'ruby-electric-mode)
 
 (require 'ruby-braces)
 
@@ -388,3 +388,9 @@ prefix argument allows editing of the console command arguments."
 
 (add-to-list 'load-path (concat dotfiles-dir "/vendor/sunrise-commander"))
 (require 'sunrise-commander)
+
+(require 'wrap-region)
+(wrap-region-add-wrappers '(("/" "/" nil 'ruby-mode)))
+(wrap-region-global-mode t)
+
+(set-cursor-color "black")
